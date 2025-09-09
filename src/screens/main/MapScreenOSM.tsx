@@ -7,7 +7,6 @@ import {
   Alert,
   ActivityIndicator,
   Modal,
-  Image,
   ScrollView,
 } from 'react-native';
 import MapView, {Marker} from 'react-native-maps';
@@ -23,13 +22,12 @@ interface Issue {
   latitude: number;
   longitude: number;
   address: string;
-  images: string[];
   status: 'pending' | 'in-progress' | 'resolved';
   reportedAt: string;
   reportedBy: string;
 }
 
-// Mock data for demonstration
+// Mock data with realistic coordinates (San Francisco area)
 const MOCK_ISSUES: Issue[] = [
   {
     id: '1',
@@ -37,10 +35,9 @@ const MOCK_ISSUES: Issue[] = [
     description: 'Large pothole causing traffic issues',
     category: 'roads',
     priority: 'high',
-    latitude: 37.78825,
-    longitude: -122.4324,
+    latitude: 37.7749,
+    longitude: -122.4194,
     address: 'Main Street, Downtown',
-    images: [],
     status: 'pending',
     reportedAt: '2024-01-15',
     reportedBy: 'John Doe',
@@ -51,10 +48,9 @@ const MOCK_ISSUES: Issue[] = [
     description: 'Broken water pipe flooding the street',
     category: 'water',
     priority: 'critical',
-    latitude: 37.78925,
-    longitude: -122.4334,
+    latitude: 37.7849,
+    longitude: -122.4094,
     address: 'Oak Avenue, Block 5',
-    images: [],
     status: 'in-progress',
     reportedAt: '2024-01-14',
     reportedBy: 'Jane Smith',
@@ -65,10 +61,9 @@ const MOCK_ISSUES: Issue[] = [
     description: 'Street light has been out for 3 days',
     category: 'electricity',
     priority: 'medium',
-    latitude: 37.78725,
-    longitude: -122.4314,
+    latitude: 37.7649,
+    longitude: -122.4294,
     address: 'Pine Street, Near Park',
-    images: [],
     status: 'resolved',
     reportedAt: '2024-01-13',
     reportedBy: 'Mike Johnson',
@@ -79,23 +74,22 @@ const MOCK_ISSUES: Issue[] = [
     description: 'Public garbage bin is overflowing',
     category: 'waste',
     priority: 'low',
-    latitude: 37.78625,
-    longitude: -122.4304,
+    latitude: 37.7549,
+    longitude: -122.4394,
     address: 'Central Park, East Gate',
-    images: [],
     status: 'pending',
     reportedAt: '2024-01-12',
     reportedBy: 'Sarah Wilson',
   },
 ];
 
-const CATEGORY_COLORS = {
-  roads: '#FF6B6B',
-  water: '#4ECDC4',
-  electricity: '#FFE66D',
-  waste: '#95E1D3',
-  public: '#A8E6CF',
-  other: '#C7CEEA',
+const CATEGORY_INFO = {
+  roads: {icon: '🛣️', name: 'Roads & Traffic', color: '#FF6B6B'},
+  water: {icon: '💧', name: 'Water Supply', color: '#4ECDC4'},
+  electricity: {icon: '⚡', name: 'Electricity', color: '#FFE66D'},
+  waste: {icon: '🗑️', name: 'Waste Management', color: '#95E1D3'},
+  public: {icon: '🏛️', name: 'Public Facilities', color: '#A8E6CF'},
+  other: {icon: '📝', name: 'Other', color: '#C7CEEA'},
 };
 
 const PRIORITY_COLORS = {
@@ -105,18 +99,18 @@ const PRIORITY_COLORS = {
   critical: '#9C27B0',
 };
 
-const STATUS_COLORS = {
-  pending: '#FF9800',
-  'in-progress': '#2196F3',
-  resolved: '#4CAF50',
+const STATUS_INFO = {
+  pending: {color: '#FF9800', label: 'Pending', icon: '⏳'},
+  'in-progress': {color: '#2196F3', label: 'In Progress', icon: '🔧'},
+  resolved: {color: '#4CAF50', label: 'Resolved', icon: '✅'},
 };
 
 const MapScreen: React.FC = () => {
   const [region, setRegion] = useState({
-    latitude: 37.78825,
-    longitude: -122.4324,
-    latitudeDelta: 0.01,
-    longitudeDelta: 0.01,
+    latitude: 37.7749,
+    longitude: -122.4194,
+    latitudeDelta: 0.05,
+    longitudeDelta: 0.05,
   });
   const [issues, setIssues] = useState<Issue[]>(MOCK_ISSUES);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
@@ -130,27 +124,19 @@ const MapScreen: React.FC = () => {
   const getCurrentLocation = async () => {
     try {
       const {status} = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission denied', 'Location permission is required to show your location');
-        setLoading(false);
-        return;
+      if (status === 'granted') {
+        const location = await Location.getCurrentPositionAsync({});
+        setRegion({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          latitudeDelta: 0.05,
+          longitudeDelta: 0.05,
+        });
       }
-
-      const location = await Location.getCurrentPositionAsync({});
-      setRegion({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      });
     } catch (error) {
-      Alert.alert('Error', 'Failed to get current location');
+      console.log('Location error:', error);
     }
     setLoading(false);
-  };
-
-  const getMarkerColor = (issue: Issue) => {
-    return CATEGORY_COLORS[issue.category as keyof typeof CATEGORY_COLORS] || COLORS.primary;
   };
 
   const getFilteredIssues = () => {
@@ -158,20 +144,9 @@ const MapScreen: React.FC = () => {
     return issues.filter(issue => issue.status === filter);
   };
 
-  const getCategoryIcon = (category: string) => {
-    const icons = {
-      roads: '🛣️',
-      water: '💧',
-      electricity: '⚡',
-      waste: '🗑️',
-      public: '🏛️',
-      other: '📝',
-    };
-    return icons[category as keyof typeof icons] || '📝';
-  };
-
-  const getStatusText = (status: string) => {
-    return status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ');
+  const getMarkerColor = (issue: Issue) => {
+    const categoryInfo = CATEGORY_INFO[issue.category as keyof typeof CATEGORY_INFO];
+    return categoryInfo?.color || COLORS.primary;
   };
 
   if (loading) {
@@ -185,6 +160,12 @@ const MapScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>🗺️ Issue Map</Text>
+        <Text style={styles.headerSubtitle}>Tap markers to see details</Text>
+      </View>
+
       {/* Filter Bar */}
       <View style={styles.filterBar}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -194,7 +175,6 @@ const MapScreen: React.FC = () => {
               style={[
                 styles.filterButton,
                 filter === status && styles.filterButtonActive,
-                {borderColor: STATUS_COLORS[status as keyof typeof STATUS_COLORS] || COLORS.primary},
               ]}
               onPress={() => setFilter(status as any)}
             >
@@ -204,7 +184,8 @@ const MapScreen: React.FC = () => {
                   filter === status && styles.filterButtonTextActive,
                 ]}
               >
-                {getStatusText(status)} ({status === 'all' ? issues.length : issues.filter(i => i.status === status).length})
+                {status === 'all' ? 'All' : STATUS_INFO[status as keyof typeof STATUS_INFO].label} 
+                ({status === 'all' ? issues.length : issues.filter(i => i.status === status).length})
               </Text>
             </TouchableOpacity>
           ))}
@@ -227,11 +208,12 @@ const MapScreen: React.FC = () => {
               latitude: issue.latitude,
               longitude: issue.longitude,
             }}
-            pinColor={getMarkerColor(issue)}
             onPress={() => setSelectedIssue(issue)}
           >
             <View style={[styles.customMarker, {backgroundColor: getMarkerColor(issue)}]}>
-              <Text style={styles.markerText}>{getCategoryIcon(issue.category)}</Text>
+              <Text style={styles.markerText}>
+                {CATEGORY_INFO[issue.category as keyof typeof CATEGORY_INFO]?.icon || '📝'}
+              </Text>
             </View>
           </Marker>
         ))}
@@ -258,15 +240,20 @@ const MapScreen: React.FC = () => {
                       <Text style={styles.closeButtonText}>✕</Text>
                     </TouchableOpacity>
                   </View>
+                  
                   <View style={styles.modalBadges}>
-                    <View style={[styles.badge, {backgroundColor: CATEGORY_COLORS[selectedIssue.category as keyof typeof CATEGORY_COLORS]}]}>
-                      <Text style={styles.badgeText}>{getCategoryIcon(selectedIssue.category)} {selectedIssue.category}</Text>
+                    <View style={[styles.badge, {backgroundColor: getMarkerColor(selectedIssue)}]}>
+                      <Text style={styles.badgeText}>
+                        {CATEGORY_INFO[selectedIssue.category as keyof typeof CATEGORY_INFO]?.icon} {selectedIssue.category}
+                      </Text>
                     </View>
                     <View style={[styles.badge, {backgroundColor: PRIORITY_COLORS[selectedIssue.priority as keyof typeof PRIORITY_COLORS]}]}>
                       <Text style={styles.badgeText}>{selectedIssue.priority}</Text>
                     </View>
-                    <View style={[styles.badge, {backgroundColor: STATUS_COLORS[selectedIssue.status]}]}>
-                      <Text style={styles.badgeText}>{getStatusText(selectedIssue.status)}</Text>
+                    <View style={[styles.badge, {backgroundColor: STATUS_INFO[selectedIssue.status].color}]}>
+                      <Text style={styles.badgeText}>
+                        {STATUS_INFO[selectedIssue.status].icon} {STATUS_INFO[selectedIssue.status].label}
+                      </Text>
                     </View>
                   </View>
                 </View>
@@ -295,7 +282,7 @@ const MapScreen: React.FC = () => {
 
                 <View style={styles.modalActions}>
                   <TouchableOpacity style={styles.actionButton}>
-                    <Text style={styles.actionButtonText}>👍 Upvote</Text>
+                    <Text style={styles.actionButtonText}>👍 Support</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.actionButton}>
                     <Text style={styles.actionButtonText}>💬 Comment</Text>
@@ -345,6 +332,21 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginTop: SPACING.md,
   },
+  header: {
+    backgroundColor: COLORS.primary,
+    padding: SPACING.md,
+    paddingTop: SPACING.xl,
+  },
+  headerTitle: {
+    ...TYPOGRAPHY.h2,
+    color: COLORS.white,
+    marginBottom: SPACING.xs,
+  },
+  headerSubtitle: {
+    ...TYPOGRAPHY.body,
+    color: COLORS.white,
+    opacity: 0.9,
+  },
   filterBar: {
     backgroundColor: COLORS.white,
     paddingVertical: SPACING.sm,
@@ -357,10 +359,12 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
     borderRadius: 20,
     borderWidth: 1,
+    borderColor: COLORS.border,
     marginRight: SPACING.sm,
   },
   filterButtonActive: {
     backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   filterButtonText: {
     ...TYPOGRAPHY.caption,
@@ -378,8 +382,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: COLORS.white,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   markerText: {
     fontSize: 16,
@@ -407,7 +416,7 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   modalTitle: {
-    ...TYPOGRAPHY.h2,
+    ...TYPOGRAPHY.h3,
     color: COLORS.text,
     flex: 1,
   },

@@ -5,9 +5,9 @@ import { COLORS } from '../utils/constants';
 
 // Import screens (we'll create these next)
 import HomeScreen from '../screens/main/HomeScreen';
-import ReportIssueScreen from '../screens/main/ReportIssueScreen';
+import ReportIssueScreen from '../screens/main/ReportIssueScreenAI';
 import MyReportsScreen from '../screens/main/MyReportsScreen';
-import MapScreen from '../screens/main/MapScreen';
+import MapScreen from '../screens/main/MapScreenOSM';
 import ProfileScreen from '../screens/main/ProfileScreen';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
