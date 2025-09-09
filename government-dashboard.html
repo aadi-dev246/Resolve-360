@@ -1,22 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Government Dashboard - Resolve360</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
-    
+
     <!-- Google Maps API - Remove this line to disable maps -->
     <!-- <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap"></script> -->
-    
+
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #f8fafc;
@@ -185,10 +194,21 @@
             font-weight: 600;
         }
 
-        .stat-pending .stat-number { color: #f59e0b; }
-        .stat-progress .stat-number { color: #3b82f6; }
-        .stat-resolved .stat-number { color: #10b981; }
-        .stat-total .stat-number { color: #6366f1; }
+        .stat-pending .stat-number {
+            color: #f59e0b;
+        }
+
+        .stat-progress .stat-number {
+            color: #3b82f6;
+        }
+
+        .stat-resolved .stat-number {
+            color: #10b981;
+        }
+
+        .stat-total .stat-number {
+            color: #6366f1;
+        }
 
         .controls-section {
             background: white;
@@ -216,14 +236,16 @@
             color: #374151;
         }
 
-        .control-input, .control-select {
+        .control-input,
+        .control-select {
             padding: 10px 15px;
             border: 2px solid #e5e7eb;
             border-radius: 8px;
             font-size: 14px;
         }
 
-        .control-input:focus, .control-select:focus {
+        .control-input:focus,
+        .control-select:focus {
             outline: none;
             border-color: #3b82f6;
         }
@@ -329,10 +351,25 @@
             text-transform: uppercase;
         }
 
-        .category-infrastructure { background: rgba(37, 99, 235, 0.1); color: #2563eb; }
-        .category-safety { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-        .category-environment { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-        .category-transport { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+        .category-infrastructure {
+            background: rgba(37, 99, 235, 0.1);
+            color: #2563eb;
+        }
+
+        .category-safety {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .category-environment {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .category-transport {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
 
         .status-badge {
             padding: 4px 8px;
@@ -341,9 +378,20 @@
             font-weight: 600;
         }
 
-        .status-pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
-        .status-progress { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-        .status-resolved { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .status-progress {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .status-resolved {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
 
         .report-description {
             color: #6b7280;
@@ -470,12 +518,12 @@
             .reports-section {
                 grid-template-columns: 1fr;
             }
-            
+
             .controls-grid {
                 grid-template-columns: 1fr;
                 gap: 15px;
             }
-            
+
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -485,13 +533,14 @@
             .main-content {
                 padding: 20px;
             }
-            
+
             .stats-grid {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
+
 <body>
     <!-- Login Screen -->
     <div class="login-screen" id="loginScreen">
@@ -528,7 +577,8 @@
                     <span>Connected</span>
                 </div>
                 <span id="userEmail"></span>
-                <button class="logout-btn" onclick="window.enhancedDashboardSync.simulateVariedMobileReport()" style="background: #10b981; margin-right: 10px;">
+                <button class="logout-btn" onclick="window.enhancedDashboardSync.simulateVariedMobileReport()"
+                    style="background: #10b981; margin-right: 10px;">
                     <i class="fas fa-mobile-alt"></i> Test Sync
                 </button>
                 <button class="logout-btn" onclick="logout()">
@@ -564,7 +614,8 @@
                 <div class="controls-grid">
                     <div class="control-group">
                         <label class="control-label">Search Reports</label>
-                        <input type="text" id="searchInput" class="control-input" placeholder="Search by title, description, or location...">
+                        <input type="text" id="searchInput" class="control-input"
+                            placeholder="Search by title, description, or location...">
                     </div>
                     <div class="control-group">
                         <label class="control-label">Filter by Status</label>
@@ -615,9 +666,10 @@
                 <!-- Report Details -->
                 <div class="report-details">
                     <div class="details-title">Report Details</div>
-                    
+
                     <div class="no-selection" id="noSelection">
-                        <i class="fas fa-mouse-pointer" style="font-size: 48px; color: #d1d5db; margin-bottom: 15px;"></i>
+                        <i class="fas fa-mouse-pointer"
+                            style="font-size: 48px; color: #d1d5db; margin-bottom: 15px;"></i>
                         <p>Select a report to view details</p>
                     </div>
 
@@ -698,7 +750,7 @@
         };
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             setupEventListeners();
         });
 
@@ -714,7 +766,7 @@
 
             // Category filter buttons
             document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', function () {
                     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
                     applyFilters();
@@ -725,7 +777,7 @@
         // Authentication
         async function handleLogin(e) {
             e.preventDefault();
-            
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const loginBtn = document.getElementById('loginBtn');
@@ -741,7 +793,7 @@
                 document.getElementById('userEmail').textContent = email;
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
-                
+
                 showNotification('Login successful! Welcome to the dashboard.');
                 startRealtimeListener();
             } else {
@@ -767,7 +819,7 @@
         function startRealtimeListener() {
             // For demo, use localStorage with polling
             loadReportsFromStorage();
-            
+
             // Poll for updates every 5 seconds
             setInterval(() => {
                 loadReportsFromStorage();
@@ -801,17 +853,21 @@
             if (stored) {
                 const reports = JSON.parse(stored);
                 const newReportsCount = reports.length - allReports.length;
-                
+                coordinatesArray = [{ "lat": 20.8705612, "lng": 74.7660728 }, { "lat": 20.8953566, "lng": 74.7294362 }, {
+                    "lat": 20.9120663,
+                    "lng": 74.7775639
+                }]
                 allReports = reports.map(report => ({
                     ...report,
                     timestamp: report.timestamp || report.createdAt,
-                    coordinates: generateRandomCoordinates()
+                    coordinates: coordinatesArray[Math.floor(Math.random() * coordinatesArray.length)]
+                    // For demo, use fixed coordinates or generate random ones
                 }));
-                
+
                 if (newReportsCount > 0 && allReports.length > 4) {
                     showNotification(`${newReportsCount} new report(s) received`);
                 }
-                
+
                 applyFilters();
                 updateStats();
             }
@@ -833,7 +889,7 @@
             const categoryFilter = document.querySelector('.filter-btn.active').dataset.category;
 
             filteredReports = allReports.filter(report => {
-                const matchesSearch = !searchTerm || 
+                const matchesSearch = !searchTerm ||
                     report.title.toLowerCase().includes(searchTerm) ||
                     report.description.toLowerCase().includes(searchTerm) ||
                     report.location.toLowerCase().includes(searchTerm);
@@ -913,7 +969,7 @@
         // Select report
         function selectReport(reportId) {
             selectedReport = allReports.find(r => r.id === reportId);
-            
+
             if (selectedReport) {
                 document.getElementById('noSelection').style.display = 'none';
                 document.getElementById('detailsContent').classList.add('active');
@@ -928,7 +984,7 @@
                 `;
                 document.getElementById('detailLocation').textContent = selectedReport.location;
                 document.getElementById('detailUser').textContent = selectedReport.user?.name || 'Anonymous User';
-                document.getElementById('detailTimestamp').textContent = 
+                document.getElementById('detailTimestamp').textContent =
                     new Date(selectedReport.timestamp || selectedReport.createdAt).toLocaleString();
                 document.getElementById('statusSelect').value = selectedReport.status;
 
@@ -944,11 +1000,11 @@
         // Update statistics
         function updateStats() {
             document.getElementById('totalReports').textContent = allReports.length;
-            document.getElementById('pendingReports').textContent = 
+            document.getElementById('pendingReports').textContent =
                 allReports.filter(r => r.status === 'pending').length;
-            document.getElementById('progressReports').textContent = 
+            document.getElementById('progressReports').textContent =
                 allReports.filter(r => r.status === 'progress').length;
-            document.getElementById('resolvedReports').textContent = 
+            document.getElementById('resolvedReports').textContent =
                 allReports.filter(r => r.status === 'resolved').length;
         }
 
@@ -966,14 +1022,14 @@
                 // Update in storage (in production, use Firebase)
                 const reports = JSON.parse(localStorage.getItem('demoReports') || '[]');
                 const reportIndex = reports.findIndex(r => r.id === selectedReport.id);
-                
+
                 if (reportIndex !== -1) {
                     reports[reportIndex].status = newStatus;
                     localStorage.setItem('demoReports', JSON.stringify(reports));
-                    
+
                     selectedReport.status = newStatus;
                     showNotification(`Report status updated to: ${newStatus}`);
-                    
+
                     // Refresh display
                     loadReportsFromStorage();
                 }
@@ -989,23 +1045,34 @@
         // Google Maps integration (disabled - add API key to enable)
         function initMap() {
             // Map disabled - add Google Maps API key to enable
-            document.getElementById('map').innerHTML = 
+            document.getElementById('map').innerHTML =
                 '<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f3f4f6; color: #6b7280;">Map disabled - Add Google Maps API key</div>';
         }
 
+        // ...existing code...
+
         function updateMap(coordinates) {
-            // Show coordinates instead of map
-            document.getElementById('map').innerHTML = 
-                `<div style="padding: 20px; background: #f3f4f6; border-radius: 8px; text-align: center;">` +
-                `<i class="fas fa-map-marker-alt" style="color: #ef4444; font-size: 24px; margin-bottom: 10px;"></i><br>` +
-                `<strong>Location:</strong><br>` +
-                `Lat: ${coordinates.lat.toFixed(6)}<br>` +
-                `Lng: ${coordinates.lng.toFixed(6)}<br>` +
-                `<a href="https://maps.google.com/?q=${coordinates.lat},${coordinates.lng}" target="_blank" style="color: #3b82f6; text-decoration: none;">` +
-                `<i class="fas fa-external-link-alt"></i> Open in Google Maps</a>` +
-                `</div>`;
+            // Clear previous map instance if exists
+            if (window.leafletMap) {
+                window.leafletMap.remove();
+                window.leafletMap = null;
+            }
+
+            // Create a new map
+            window.leafletMap = L.map('map').setView([coordinates.lat, coordinates.lng], 14);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+            }).addTo(window.leafletMap);
+
+            var marker = L.marker([coordinates.lat, coordinates.lng]).addTo(window.leafletMap);
+            marker.bindPopup(
+                `<b>Location</b><br>Lat: ${coordinates.lat.toFixed(6)}<br>Lng: ${coordinates.lng.toFixed(6)}`
+            ).openPopup();
         }
 
+        // ...existing code...
         // Utility functions
         function showNotification(message) {
             const notification = document.getElementById('notification');
@@ -1020,9 +1087,10 @@
 
         // Initialize map fallback
         window.initMap = initMap;
-        
+
         // Initialize map immediately if Google Maps not available
         setTimeout(initMap, 100);
     </script>
 </body>
+
 </html>
