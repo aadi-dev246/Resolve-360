@@ -15,6 +15,9 @@ import * as Location from 'expo-location';
 import * as Speech from 'expo-speech';
 import {COLORS, TYPOGRAPHY, SPACING} from '../../utils/constants';
 import {classifyIssue, analyzeIssueContent, processVoiceInput, getSmartSuggestions, AIClassificationResult, AIAnalysisResult} from '../../services/aiService';
+import SyncService from '../../services/syncService';
+import {useSelector} from 'react-redux';
+import {RootState} from '../../store/store';
 
 interface IssueData {
   title: string;
@@ -47,6 +50,8 @@ const PRIORITIES = [
 ];
 
 const ReportIssueScreenAI: React.FC = () => {
+  const {user} = useSelector((state: RootState) => state.auth);
+  const syncService = SyncService.getInstance();
   const [issueData, setIssueData] = useState<IssueData>({
     title: '',
     description: '',
@@ -177,15 +182,32 @@ const ReportIssueScreenAI: React.FC = () => {
       Alert.alert('Error', 'Please select a priority level');
       return;
     }
+    if (!issueData.location) {
+      Alert.alert('Error', 'Location is required');
+      return;
+    }
 
     setLoading(true);
     
-    // Simulate API call with AI data
-    setTimeout(() => {
+    try {
+      // Submit report with sync to government dashboard
+      const reportId = await syncService.submitReport(
+        {
+          title: issueData.title,
+          description: issueData.description,
+          category: issueData.category,
+          priority: issueData.priority,
+          location: issueData.location,
+          images: issueData.images,
+          aiAnalysis: aiClassification,
+        },
+        user
+      );
+      
       setLoading(false);
       Alert.alert(
-        'Success!',
-        `Your issue has been reported successfully with AI insights!\n\nAI Confidence: ${Math.round((aiClassification?.confidence || 0) * 100)}%\nEstimated Resolution: ${aiClassification?.estimatedResolutionTime || 'Unknown'}`,
+        '🎉 Success!',
+        `Your issue has been reported successfully!\n\n📋 Report ID: ${reportId}\n🤖 AI Confidence: ${Math.round((aiClassification?.confidence || 0) * 100)}%\n⏱️ Estimated Resolution: ${aiClassification?.estimatedResolutionTime || 'Unknown'}\n\n🏛️ Government officials have been notified automatically!`,
         [
           {
             text: 'OK',
@@ -205,7 +227,14 @@ const ReportIssueScreenAI: React.FC = () => {
           },
         ]
       );
-    }, 2000);
+    } catch (error) {
+      setLoading(false);
+      Alert.alert(
+        'Error',
+        'Failed to submit report. Please try again.',
+        [{text: 'OK'}]
+      );
+    }
   };
 
   const renderAIInsights = () => {
@@ -299,7 +328,7 @@ const ReportIssueScreenAI: React.FC = () => {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
-        <Text style={styles.title}>🤖 AI-Powered Reporting</Text>
+        <Text style={styles.title}>🤖 Resolve360 AI Reporting</Text>
         <Text style={styles.subtitle}>Smart issue classification & analysis</Text>
       </View>
 

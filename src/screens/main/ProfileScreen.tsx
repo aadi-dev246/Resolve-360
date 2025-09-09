@@ -10,6 +10,7 @@ import {
   Switch,
   Modal,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useDispatch, useSelector} from 'react-redux';
 import {RootState, AppDispatch} from '../../store/store';
 import {logout} from '../../store/slices/authSlice';
@@ -41,9 +42,9 @@ const ProfileScreen: React.FC = () => {
   const [userStats] = useState<UserStats>(MOCK_USER_STATS);
   const [editMode, setEditMode] = useState(false);
   const [editedProfile, setEditedProfile] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
+    name: user?.name || 'Pratik Gadhe',
+    email: user?.email || 'pratikgadhe366@gmail.com',
+    phone: user?.phone || '+91 9876543210',
   });
   const [notifications, setNotifications] = useState({
     pushNotifications: true,
@@ -65,9 +66,12 @@ const ProfileScreen: React.FC = () => {
   };
 
   const handleSaveProfile = () => {
-    // In real app, this would update the user profile via API
+    // Simple profile update - just show success and close modal
     Alert.alert('Success', 'Profile updated successfully!');
     setEditMode(false);
+    
+    // In a real app, you would dispatch to Redux store:
+    // dispatch(updateUser(editedProfile));
   };
 
   const getProgressPercentage = () => {
@@ -77,11 +81,11 @@ const ProfileScreen: React.FC = () => {
   const renderUserHeader = () => (
     <View style={styles.userHeader}>
       <View style={styles.avatarContainer}>
-        <Text style={styles.avatarText}>{(user?.name || 'U').charAt(0).toUpperCase()}</Text>
+        <Text style={styles.avatarText}>{(editedProfile.name || 'Pratik Gadhe').charAt(0).toUpperCase()}</Text>
       </View>
       <View style={styles.userInfo}>
-        <Text style={styles.userName}>{user?.name || 'User'}</Text>
-        <Text style={styles.userEmail}>{user?.email || 'user@example.com'}</Text>
+        <Text style={styles.userName}>{editedProfile.name || 'Pratik Gadhe'}</Text>
+        <Text style={styles.userEmail}>{editedProfile.email || 'pratikgadhe366@gmail.com'}</Text>
         <View style={styles.userBadge}>
           <Text style={styles.userBadgeText}>🏆 Community Rank #{userStats.communityRank}</Text>
         </View>
@@ -262,7 +266,7 @@ const ProfileScreen: React.FC = () => {
       {/* Footer */}
       <View style={styles.footer}>
         <Text style={styles.footerText}>Member since {userStats.joinedDate}</Text>
-        <Text style={styles.versionText}>Civic Reporter v2.0</Text>
+        <Text style={styles.versionText}>Resolve360 v2.0</Text>
       </View>
 
       {/* Edit Profile Modal */}

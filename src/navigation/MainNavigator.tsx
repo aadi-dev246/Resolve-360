@@ -7,7 +7,7 @@ import { COLORS } from '../utils/constants';
 import HomeScreen from '../screens/main/HomeScreen';
 import ReportIssueScreen from '../screens/main/ReportIssueScreenAI';
 import MyReportsScreen from '../screens/main/MyReportsScreen';
-import MapScreen from '../screens/main/MapScreenOSM';
+
 import ProfileScreen from '../screens/main/ProfileScreen';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -57,14 +57,7 @@ const MainNavigator: React.FC = () => {
           // tabBarIcon: ({color, size}) => <Icon name="list" size={size} color={color} />
         }}
       />
-      <Tab.Screen
-        name="Map"
-        component={MapScreen}
-        options={{
-          tabBarLabel: 'Map',
-          // tabBarIcon: ({color, size}) => <Icon name="map" size={size} color={color} />
-        }}
-      />
+
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}

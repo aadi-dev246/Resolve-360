@@ -186,8 +186,8 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
         <View style={styles.headerContent}>
           <View>
             <Text style={styles.greeting}>{getGreeting()}!</Text>
-            <Text style={styles.userName}>{user?.name || 'Citizen'}</Text>
-            <Text style={styles.subtitle}>Let's make our city better together</Text>
+            <Text style={styles.userName}>Pratik Gadhe</Text>
+            <Text style={styles.subtitle}>Resolve360 - Making cities better together</Text>
           </View>
           <TouchableOpacity style={styles.profileButton} onPress={handleLogout}>
             <Text style={styles.profileIcon}>👤</Text>
@@ -195,28 +195,7 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
         </View>
       </View>
 
-      {/* Community Stats */}
-      <View style={styles.statsSection}>
-        <Text style={styles.sectionTitle}>🏙️ Community Impact</Text>
-        <View style={styles.statsGrid}>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{stats.totalReports.toLocaleString()}</Text>
-            <Text style={styles.statLabel}>Total Reports</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={[styles.statNumber, {color: COLORS.success}]}>{stats.resolvedToday}</Text>
-            <Text style={styles.statLabel}>Resolved Today</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={[styles.statNumber, {color: COLORS.secondary}]}>{stats.activeUsers}</Text>
-            <Text style={styles.statLabel}>Active Citizens</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={[styles.statNumber, {color: COLORS.primary}]}>{stats.responseTime}</Text>
-            <Text style={styles.statLabel}>Avg Response</Text>
-          </View>
-        </View>
-      </View>
+
 
       {/* Quick Actions */}
       <View style={styles.section}>
@@ -326,9 +305,9 @@ const HomeScreen: React.FC<Props> = ({navigation}) => {
       {/* Footer */}
       <View style={styles.footer}>
         <Text style={styles.footerText}>
-          🏛️ Civic Reporter - Making cities better, one report at a time
+          🏛️ Resolve360 - Making cities better, one report at a time
         </Text>
-        <Text style={styles.versionText}>Version 2.0 - Phase 2 Complete</Text>
+        <Text style={styles.versionText}>Version 2.0 - Team Resolve360</Text>
       </View>
     </ScrollView>
   );
