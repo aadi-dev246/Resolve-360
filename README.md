@@ -159,7 +159,7 @@ resolve360/
 
 - **Pratik Gadhe** - Full Stack Developer & AI Integration
 - **Email**: pratikgadhe366@gmail.com
-- **Project Type**: SIH 2024 Submission
+- **Project Type**: SIH 2025 Submission
 - **GitHub**: [@PratikGadhe](https://github.com/PratikGadhe)
 
 ## 🚀 **Future Enhancements**
@@ -172,11 +172,11 @@ resolve360/
 
 ## 📄 **License**
 
-This project is developed for SIH 2024 competition. All rights reserved to Team Resolve360.
+This project is developed for SIH 2025 competition. All rights reserved to Team Resolve360.
 
 ## 🙏 **Acknowledgments**
 
-- **Smart India Hackathon 2024** for the opportunity
+- **Smart India Hackathon 2025** for the opportunity
 - **Government of India** for promoting digital innovation
 - **Open Source Community** for amazing tools and libraries
 
@@ -186,7 +186,7 @@ This project is developed for SIH 2024 competition. All rights reserved to Team 
 
 **🏛️ Making Cities Better, One Report at a Time**
 
-*Built with ❤️ by Team Resolve360 for Smart India Hackathon 2024*
+*Built with ❤️ by Team Resolve360 for Smart India Hackathon 2025*
 
 **🎯 Ready for SIH Demo | 📱 Cross-Platform | 🤖 AI-Powered | 🔗 Real-time Integration**
 
