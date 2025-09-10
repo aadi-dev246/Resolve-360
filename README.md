@@ -1,6 +1,6 @@
 # 🏛️ Resolve360 - Smart Civic Issue Management System
 
-> **SIH 2024 Project by Team Resolve360**: AI-Powered Crowdsourced Civic Issue Reporting Platform
+> **SIH 2025 Project by Team Resolve360**: AI-Powered Crowdsourced Civic Issue Reporting Platform
 
 [![React Native](https://img.shields.io/badge/React%20Native-0.79-blue.svg)](https://reactnative.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
@@ -111,7 +111,7 @@ npx expo start --web
 - Update status on dashboard → Syncs back to mobile
 - Real-time notifications for new reports
 
-## 🎯 **SIH 2024 Problem Statement**
+## 🎯 **SIH 2025 Problem Statement**
 
 **Problem**: Inefficient civic issue reporting and resolution processes in Indian cities
 
