@@ -6,18 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Government Dashboard - Resolve360</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-    </script>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
 
-    <!-- Google Maps API - Remove this line to disable maps -->
-    <!-- <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&callback=initMap"></script> -->
+    <!-- Google Maps API -->
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCeeljp-TR5qDf4nQkQg0uXXsXdpNy2joQ&callback=initGoogleMaps"></script>
 
     <style>
         * {
@@ -210,78 +206,202 @@
             color: #6366f1;
         }
 
-        .controls-section {
+        .filter-panel {
             background: white;
-            padding: 25px;
+            padding: 20px;
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
-        .controls-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr auto;
-            gap: 20px;
-            align-items: end;
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e5e7eb;
         }
 
-        .control-group {
+        .filter-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .clear-filters-btn {
+            padding: 6px 12px;
+            background: #f3f4f6;
+            color: #6b7280;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .clear-filters-btn:hover {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .filter-section {
+            margin-bottom: 20px;
+        }
+
+        .filter-label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .filter-input,
+        .filter-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+        }
+
+        .filter-input:focus,
+        .filter-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .checkbox-group {
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
 
-        .control-label {
-            font-weight: 600;
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
             color: #374151;
+            position: relative;
+            padding-left: 28px;
         }
 
-        .control-input,
-        .control-select {
-            padding: 10px 15px;
-            border: 2px solid #e5e7eb;
+        .checkbox-item input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        .checkmark {
+            position: absolute;
+            left: 0;
+            height: 18px;
+            width: 18px;
+            background-color: #fff;
+            border: 2px solid #d1d5db;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .checkbox-item:hover input ~ .checkmark {
+            border-color: #3b82f6;
+        }
+
+        .checkbox-item input:checked ~ .checkmark {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+
+        .checkbox-item input:checked ~ .checkmark:after {
+            display: block;
+        }
+
+        .checkbox-item .checkmark:after {
+            left: 5px;
+            top: 2px;
+            width: 4px;
+            height: 8px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .date-inputs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .date-input {
+            flex: 1;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
             border-radius: 8px;
             font-size: 14px;
         }
 
-        .control-input:focus,
-        .control-select:focus {
+        .date-input:focus {
             outline: none;
             border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
-        .filter-buttons {
+        .dashboard-layout {
             display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+            gap: 30px;
+            min-height: calc(100vh - 200px);
         }
 
-        .filter-btn {
-            padding: 8px 15px;
-            border: 2px solid #e5e7eb;
-            border-radius: 20px;
+        .left-column {
+            flex: 0 0 40%;
             background: white;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            position: sticky;
+            top: 120px;
+            height: fit-content;
         }
 
-        .filter-btn:hover {
-            border-color: #3b82f6;
-            color: #3b82f6;
+        .right-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        .filter-btn.active {
-            background: #3b82f6;
-            color: white;
-            border-color: #3b82f6;
+        .map-section {
+            height: 500px;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .map-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #1f2937;
         }
 
         .reports-section {
-            display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
         .reports-list {
@@ -489,6 +609,8 @@
             background: #2563eb;
         }
 
+
+
         .no-selection {
             text-align: center;
             color: #6b7280;
@@ -514,14 +636,166 @@
             transform: translateX(0);
         }
 
+        .report-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 5px;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .modal-section {
+            margin-bottom: 20px;
+        }
+
+        .modal-label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .modal-value {
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .modal-photos {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .modal-photo {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .report-item.highlighted {
+            background: #fef3c7 !important;
+            border-left: 4px solid #f59e0b !important;
+            animation: highlight 0.5s ease;
+        }
+
+        @keyframes highlight {
+            0% { background: #fbbf24; }
+            100% { background: #fef3c7; }
+        }
+
+        .loading-spinner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #e5e7eb;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 12px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px;
+            text-align: center;
+        }
+
+        .error-message i {
+            margin-right: 8px;
+        }
+
+        fieldset {
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        legend {
+            padding: 0;
+            margin-bottom: 8px;
+        }
+
         @media (max-width: 1024px) {
-            .reports-section {
-                grid-template-columns: 1fr;
+            .dashboard-layout {
+                flex-direction: column;
             }
 
-            .controls-grid {
-                grid-template-columns: 1fr;
-                gap: 15px;
+            .left-column {
+                flex: none;
+                position: static;
+            }
+
+            .map-section {
+                height: 300px;
+            }
+
+            .filter-panel {
+                padding: 15px;
+            }
+
+            .date-inputs {
+                flex-direction: column;
             }
 
             .stats-grid {
@@ -577,7 +851,7 @@
                     <span>Connected</span>
                 </div>
                 <span id="userEmail"></span>
-                <button class="logout-btn" onclick="window.enhancedDashboardSync.simulateVariedMobileReport()"
+                <button class="logout-btn" onclick="testSync()"
                     style="background: #10b981; margin-right: 10px;">
                     <i class="fas fa-mobile-alt"></i> Test Sync
                 </button>
@@ -609,114 +883,175 @@
                 </div>
             </div>
 
-            <!-- Controls -->
-            <div class="controls-section">
-                <div class="controls-grid">
-                    <div class="control-group">
-                        <label class="control-label">Search Reports</label>
-                        <input type="text" id="searchInput" class="control-input"
-                            placeholder="Search by title, description, or location...">
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label">Filter by Status</label>
-                        <select id="statusFilter" class="control-select">
-                            <option value="all">All Status</option>
-                            <option value="pending">Pending</option>
-                            <option value="progress">In Progress</option>
-                            <option value="resolved">Resolved</option>
-                        </select>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label">Sort by</label>
-                        <select id="sortBy" class="control-select">
-                            <option value="newest">Newest First</option>
-                            <option value="oldest">Oldest First</option>
-                            <option value="priority">Priority</option>
-                        </select>
-                    </div>
-                    <div class="control-group">
-                        <label class="control-label">Category</label>
-                        <div class="filter-buttons">
-                            <button class="filter-btn active" data-category="all">All</button>
-                            <button class="filter-btn" data-category="infrastructure">Infrastructure</button>
-                            <button class="filter-btn" data-category="safety">Safety</button>
-                            <button class="filter-btn" data-category="environment">Environment</button>
-                            <button class="filter-btn" data-category="transport">Transport</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Reports Section -->
-            <div class="reports-section">
-                <!-- Reports List -->
-                <div class="reports-list">
-                    <div class="reports-header">
-                        <div class="reports-title">Reports</div>
-                        <div class="reports-count" id="reportsCount">0 reports</div>
+
+            <!-- Dashboard Layout -->
+            <div class="dashboard-layout">
+                <!-- Left Column - Interactive Map -->
+                <div class="left-column">
+                    <div class="map-title">
+                        <i class="fas fa-map-marked-alt"></i> Interactive Report Map
                     </div>
-                    <div class="reports-container" id="reportsContainer">
-                        <div style="text-align: center; padding: 40px; color: #6b7280;">
-                            <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 10px;"></i>
-                            <p>Loading reports...</p>
-                        </div>
+                    <div class="map-section">
+                        <div id="mainMap" style="width: 100%; height: 100%;"></div>
                     </div>
                 </div>
 
-                <!-- Report Details -->
-                <div class="report-details">
-                    <div class="details-title">Report Details</div>
-
-                    <div class="no-selection" id="noSelection">
-                        <i class="fas fa-mouse-pointer"
-                            style="font-size: 48px; color: #d1d5db; margin-bottom: 15px;"></i>
-                        <p>Select a report to view details</p>
-                    </div>
-
-                    <div class="details-content" id="detailsContent">
-                        <div class="detail-section">
-                            <div class="detail-label">Title</div>
-                            <div class="detail-value" id="detailTitle"></div>
+                <!-- Right Column - Filters and Reports -->
+                <div class="right-column">
+                    <!-- Filter Panel -->
+                    <div class="filter-panel">
+                        <div class="filter-header">
+                            <h3>Filters</h3>
+                            <button class="clear-filters-btn" onclick="clearAllFilters()">Clear All</button>
+                        </div>
+                        
+                        <div class="filter-section">
+                            <label class="filter-label" for="searchInput">Search</label>
+                            <input type="text" id="searchInput" class="filter-input" placeholder="Search reports..." aria-label="Search reports by title, description, or location">
                         </div>
 
-                        <div class="detail-section">
-                            <div class="detail-label">Description</div>
-                            <div class="detail-value" id="detailDescription"></div>
+                        <div class="filter-section">
+                            <fieldset>
+                                <legend class="filter-label">Report Type</legend>
+                                <div class="checkbox-group" role="group" aria-label="Filter by report type">
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="type-infrastructure" value="infrastructure" checked aria-describedby="type-infrastructure-desc">
+                                        <span class="checkmark"></span>
+                                        Infrastructure
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="type-environment" value="environment" checked aria-describedby="type-environment-desc">
+                                        <span class="checkmark"></span>
+                                        Environment
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="type-safety" value="safety" checked aria-describedby="type-safety-desc">
+                                        <span class="checkmark"></span>
+                                        Public Safety
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="type-transport" value="transport" checked aria-describedby="type-transport-desc">
+                                        <span class="checkmark"></span>
+                                        Social Services
+                                    </label>
+                                </div>
+                            </fieldset>
                         </div>
 
-                        <div class="detail-section">
-                            <div class="detail-label">Category</div>
-                            <div class="detail-value" id="detailCategory"></div>
+                        <div class="filter-section">
+                            <fieldset>
+                                <legend class="filter-label">Status</legend>
+                                <div class="checkbox-group" role="group" aria-label="Filter by report status">
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="status-pending" value="pending" checked aria-describedby="status-pending-desc">
+                                        <span class="checkmark"></span>
+                                        Open
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="status-progress" value="progress" checked aria-describedby="status-progress-desc">
+                                        <span class="checkmark"></span>
+                                        In Progress
+                                    </label>
+                                    <label class="checkbox-item">
+                                        <input type="checkbox" id="status-resolved" value="resolved" checked aria-describedby="status-resolved-desc">
+                                        <span class="checkmark"></span>
+                                        Resolved
+                                    </label>
+                                </div>
+                            </fieldset>
                         </div>
 
-                        <div class="detail-section">
-                            <div class="detail-label">Location</div>
-                            <div class="detail-value" id="detailLocation"></div>
-                            <div class="map-container">
-                                <div id="map" style="width: 100%; height: 100%;"></div>
+                        <div class="filter-section">
+                            <label class="filter-label">Date Range</label>
+                            <div class="date-inputs">
+                                <input type="date" id="startDate" class="date-input" aria-label="Start date for filtering reports">
+                                <input type="date" id="endDate" class="date-input" aria-label="End date for filtering reports">
                             </div>
                         </div>
 
-                        <div class="detail-section">
-                            <div class="detail-label">Submitted By</div>
-                            <div class="detail-value" id="detailUser"></div>
-                        </div>
-
-                        <div class="detail-section">
-                            <div class="detail-label">Submitted On</div>
-                            <div class="detail-value" id="detailTimestamp"></div>
-                        </div>
-
-                        <div class="status-update-section">
-                            <div class="detail-label">Update Status</div>
-                            <select id="statusSelect" class="status-select">
-                                <option value="pending">Pending</option>
-                                <option value="progress">In Progress</option>
-                                <option value="resolved">Resolved</option>
+                        <div class="filter-section">
+                            <label class="filter-label" for="sortBy">Sort by</label>
+                            <select id="sortBy" class="filter-select" aria-label="Sort reports by date or priority">
+                                <option value="newest">Newest First</option>
+                                <option value="oldest">Oldest First</option>
+                                <option value="priority">Priority</option>
                             </select>
-                            <button class="update-btn" onclick="updateReportStatus()">
-                                <i class="fas fa-save"></i> Update Status
-                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Reports Section -->
+                    <div class="reports-section">
+                        <!-- Reports List -->
+                        <div class="reports-list">
+                            <div class="reports-header">
+                                <div class="reports-title">Reports</div>
+                                <div class="reports-count" id="reportsCount">0 reports</div>
+                            </div>
+                            <div class="reports-container" id="reportsContainer">
+                                <div class="loading-spinner">
+                                    <div class="spinner"></div>
+                                    <span>Loading reports...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Report Details -->
+                        <div class="report-details">
+                            <div class="details-title">Report Details</div>
+
+                            <div class="no-selection" id="noSelection">
+                                <i class="fas fa-mouse-pointer"
+                                    style="font-size: 48px; color: #d1d5db; margin-bottom: 15px;"></i>
+                                <p>Select a report to view details</p>
+                            </div>
+
+                            <div class="details-content" id="detailsContent">
+                                <div class="detail-section">
+                                    <div class="detail-label">Title</div>
+                                    <div class="detail-value" id="detailTitle"></div>
+                                </div>
+
+                                <div class="detail-section">
+                                    <div class="detail-label">Description</div>
+                                    <div class="detail-value" id="detailDescription"></div>
+                                </div>
+
+                                <div class="detail-section">
+                                    <div class="detail-label">Category</div>
+                                    <div class="detail-value" id="detailCategory"></div>
+                                </div>
+
+                                <div class="detail-section">
+                                    <div class="detail-label">Location</div>
+                                    <div class="detail-value" id="detailLocation"></div>
+                                    <div class="map-container">
+                                        <div id="map" style="width: 100%; height: 100%;"></div>
+                                    </div>
+                                </div>
+
+                                <div class="detail-section">
+                                    <div class="detail-label">Submitted By</div>
+                                    <div class="detail-value" id="detailUser"></div>
+                                </div>
+
+                                <div class="detail-section">
+                                    <div class="detail-label">Submitted On</div>
+                                    <div class="detail-value" id="detailTimestamp"></div>
+                                </div>
+
+                                <div class="status-update-section">
+                                    <div class="detail-label">Update Status</div>
+                                    <select id="statusSelect" class="status-select">
+                                        <option value="pending">Pending</option>
+                                        <option value="progress">In Progress</option>
+                                        <option value="resolved">Resolved</option>
+                                    </select>
+                                    <button class="update-btn" onclick="updateReportStatus()">
+                                        <i class="fas fa-save"></i> Update Status
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -730,8 +1065,48 @@
         <span id="notificationText">Notification</span>
     </div>
 
+    <!-- Report Modal -->
+    <div class="report-modal" id="reportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Report Details</h3>
+                <button class="modal-close" onclick="closeModal()" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <label class="modal-label">Title</label>
+                    <div class="modal-value" id="modalReportTitle"></div>
+                </div>
+                <div class="modal-section">
+                    <label class="modal-label">Description</label>
+                    <div class="modal-value" id="modalReportDescription"></div>
+                </div>
+                <div class="modal-section">
+                    <label class="modal-label">Category</label>
+                    <div class="modal-value" id="modalReportCategory"></div>
+                </div>
+                <div class="modal-section">
+                    <label class="modal-label">Status</label>
+                    <div class="modal-value" id="modalReportStatus"></div>
+                </div>
+                <div class="modal-section">
+                    <label class="modal-label">Location</label>
+                    <div class="modal-value" id="modalReportLocation"></div>
+                </div>
+                <div class="modal-section" id="modalPhotosSection" style="display: none;">
+                    <label class="modal-label">Photos</label>
+                    <div class="modal-photos" id="modalPhotos"></div>
+                </div>
+                <div class="modal-section">
+                    <label class="modal-label">Submitted</label>
+                    <div class="modal-value" id="modalReportDate"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="firebase-config.js"></script>
-    <script src="sync-integration-enhanced.js"></script>
+    <script src="realtime-sync.js"></script>
     <script>
         // Global variables
         let currentUser = null;
@@ -761,16 +1136,13 @@
 
             // Search and filters
             document.getElementById('searchInput').addEventListener('input', applyFilters);
-            document.getElementById('statusFilter').addEventListener('change', applyFilters);
             document.getElementById('sortBy').addEventListener('change', applyFilters);
+            document.getElementById('startDate').addEventListener('change', applyFilters);
+            document.getElementById('endDate').addEventListener('change', applyFilters);
 
-            // Category filter buttons
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    applyFilters();
-                });
+            // Checkbox filters
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', applyFilters);
             });
         }
 
@@ -817,35 +1189,44 @@
 
         // Real-time data listener
         function startRealtimeListener() {
-            // For demo, use localStorage with polling
-            loadReportsFromStorage();
-
-            // Poll for updates every 5 seconds
-            setInterval(() => {
+            // Initialize real-time sync system
+            if (window.realtimeSync) {
+                console.log('✅ Real-time sync system activated');
+                showNotification('Real-time sync enabled - Live updates active');
+                
+                // Load initial data
                 loadReportsFromStorage();
-            }, 5000);
-
-            // In production, use Firebase listener:
-            /*
-            reportsListener = db.collection('reports')
-                .orderBy('timestamp', 'desc')
-                .onSnapshot((snapshot) => {
-                    allReports = [];
-                    snapshot.forEach((doc) => {
-                        allReports.push({ id: doc.id, ...doc.data() });
-                    });
-                    
-                    applyFilters();
-                    updateStats();
-                    
-                    snapshot.docChanges().forEach((change) => {
-                        if (change.type === 'added' && allReports.length > 1) {
-                            const newReport = { id: change.doc.id, ...change.doc.data() };
-                            showNotification(`New ${newReport.category} report received`);
-                        }
-                    });
-                });
-            */
+                
+                // Set up periodic sync check
+                setInterval(() => {
+                    if (window.realtimeSync && window.realtimeSync.isConnected) {
+                        updateConnectionIndicator('connected');
+                    } else {
+                        updateConnectionIndicator('disconnected');
+                    }
+                }, 5000);
+            } else {
+                console.log('Real-time sync not available, using fallback');
+                loadReportsFromStorage();
+                setInterval(() => loadReportsFromStorage(), 3000);
+            }
+        }
+        
+        // Update connection indicator
+        function updateConnectionIndicator(status) {
+            const indicator = document.getElementById('connectionStatus');
+            if (indicator) {
+                const statusConfig = {
+                    connected: { text: 'Live Sync Active', color: '#10b981', icon: 'fas fa-sync-alt' },
+                    disconnected: { text: 'Sync Offline', color: '#ef4444', icon: 'fas fa-exclamation-triangle' },
+                    reconnecting: { text: 'Reconnecting...', color: '#f59e0b', icon: 'fas fa-spinner fa-spin' }
+                };
+                
+                const config = statusConfig[status] || statusConfig.connected;
+                indicator.innerHTML = `<i class="${config.icon}"></i> <span>${config.text}</span>`;
+                indicator.style.color = config.color;
+                indicator.style.background = `${config.color}20`;
+            }
         }
 
         function loadReportsFromStorage() {
@@ -870,6 +1251,8 @@
 
                 applyFilters();
                 updateStats();
+
+                updateMainMapMarkers();
             }
         }
 
@@ -882,40 +1265,95 @@
         }
 
         // Filter and search
-        function applyFilters() {
+        async function applyFilters() {
+            showLoadingSpinner();
+            
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
             const sortBy = document.getElementById('sortBy').value;
-            const categoryFilter = document.querySelector('.filter-btn.active').dataset.category;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
 
-            filteredReports = allReports.filter(report => {
-                const matchesSearch = !searchTerm ||
-                    report.title.toLowerCase().includes(searchTerm) ||
-                    report.description.toLowerCase().includes(searchTerm) ||
-                    report.location.toLowerCase().includes(searchTerm);
+            // Get selected report types
+            const selectedTypes = Array.from(document.querySelectorAll('input[id^="type-"]:checked'))
+                .map(cb => cb.value);
 
-                const matchesStatus = statusFilter === 'all' || report.status === statusFilter;
-                const matchesCategory = categoryFilter === 'all' || report.category === categoryFilter;
+            // Get selected statuses
+            const selectedStatuses = Array.from(document.querySelectorAll('input[id^="status-"]:checked'))
+                .map(cb => cb.value);
 
-                return matchesSearch && matchesStatus && matchesCategory;
-            });
+            // Build filter params
+            const filters = {
+                search: searchTerm,
+                types: selectedTypes,
+                statuses: selectedStatuses,
+                startDate,
+                endDate,
+                sortBy
+            };
 
-            // Sort reports
-            filteredReports.sort((a, b) => {
-                switch (sortBy) {
-                    case 'newest':
-                        return new Date(b.timestamp || b.createdAt) - new Date(a.timestamp || a.createdAt);
-                    case 'oldest':
-                        return new Date(a.timestamp || a.createdAt) - new Date(b.timestamp || b.createdAt);
-                    case 'priority':
-                        const priorityOrder = { high: 3, medium: 2, low: 1 };
-                        return (priorityOrder[b.priority] || 2) - (priorityOrder[a.priority] || 2);
-                    default:
-                        return 0;
+            try {
+                // Call API with filters
+                const response = await fetch('/api/admin/reports', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(filters)
+                });
+                
+                if (response.ok) {
+                    filteredReports = await response.json();
+                    updateMapMarkers(filteredReports);
+                } else {
+                    showErrorMessage('Failed to load reports from server. Using local data.');
+                    // Fallback to local filtering
+                    filteredReports = allReports.filter(report => {
+                        const matchesSearch = !searchTerm ||
+                            report.title.toLowerCase().includes(searchTerm) ||
+                            report.description.toLowerCase().includes(searchTerm) ||
+                            report.location.toLowerCase().includes(searchTerm);
+
+                        const matchesType = selectedTypes.length === 0 || selectedTypes.includes(report.category);
+                        const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(report.status);
+
+                        let matchesDateRange = true;
+                        if (startDate || endDate) {
+                            const reportDate = new Date(report.timestamp || report.createdAt);
+                            if (startDate) {
+                                matchesDateRange = matchesDateRange && reportDate >= new Date(startDate);
+                            }
+                            if (endDate) {
+                                matchesDateRange = matchesDateRange && reportDate <= new Date(endDate + 'T23:59:59');
+                            }
+                        }
+
+                        return matchesSearch && matchesType && matchesStatus && matchesDateRange;
+                    });
+                    updateMapMarkers(filteredReports);
                 }
-            });
+            } catch (error) {
+                console.error('Filter API error:', error);
+                showErrorMessage('Network error occurred. Using local data.');
+                // Fallback to local filtering on error
+                filteredReports = allReports;
+                updateMapMarkers(filteredReports);
+            }
 
+            hideLoadingSpinner();
             displayReports();
+        }
+
+        // Clear all filters
+        function clearAllFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            document.getElementById('sortBy').value = 'newest';
+            
+            // Check all checkboxes
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.checked = true;
+            });
+            
+            applyFilters();
         }
 
         // Display reports
@@ -941,7 +1379,7 @@
 
                 return `
                     <div class="report-item ${selectedReport?.id === report.id ? 'selected' : ''}" 
-                         onclick="selectReport('${report.id}')">
+                         onclick="selectReportAndPanMap('${report.id}')">
                         <div class="report-header">
                             <div>
                                 <div class="report-title">${report.title}</div>
@@ -1008,7 +1446,7 @@
                 allReports.filter(r => r.status === 'resolved').length;
         }
 
-        // Update report status
+        // Update report status with real-time sync
         async function updateReportStatus() {
             if (!selectedReport) return;
 
@@ -1019,57 +1457,153 @@
             updateBtn.disabled = true;
 
             try {
-                // Update in storage (in production, use Firebase)
-                const reports = JSON.parse(localStorage.getItem('demoReports') || '[]');
-                const reportIndex = reports.findIndex(r => r.id === selectedReport.id);
+                // Use real-time sync if available
+                if (window.realtimeSync) {
+                    await window.realtimeSync.updateReportStatus(selectedReport.id, newStatus);
+                } else {
+                    // Fallback to localStorage
+                    const reports = JSON.parse(localStorage.getItem('civicReports') || localStorage.getItem('demoReports') || '[]');
+                    const reportIndex = reports.findIndex(r => r.id === selectedReport.id);
 
-                if (reportIndex !== -1) {
-                    reports[reportIndex].status = newStatus;
-                    localStorage.setItem('demoReports', JSON.stringify(reports));
-
-                    selectedReport.status = newStatus;
-                    showNotification(`Report status updated to: ${newStatus}`);
-
-                    // Refresh display
-                    loadReportsFromStorage();
+                    if (reportIndex !== -1) {
+                        reports[reportIndex].status = newStatus;
+                        reports[reportIndex].lastUpdated = new Date().toISOString();
+                        localStorage.setItem('civicReports', JSON.stringify(reports));
+                        
+                        // Trigger storage event for real-time updates
+                        window.dispatchEvent(new StorageEvent('storage', {
+                            key: 'civicReports',
+                            newValue: JSON.stringify(reports)
+                        }));
+                    }
                 }
+
+                selectedReport.status = newStatus;
+                showNotification(`✅ Status updated to: ${newStatus.toUpperCase()} - Synced in real-time`);
+
+                // Refresh display
+                loadReportsFromStorage();
+                
+                // Update the selected report display
+                document.querySelector(`[onclick="selectReport('${selectedReport.id}')"]`)?.classList.add('selected');
+                
             } catch (error) {
                 console.error('Error updating status:', error);
-                showNotification('Failed to update status');
+                showNotification('❌ Failed to update status - Will retry automatically');
             } finally {
                 updateBtn.innerHTML = '<i class="fas fa-save"></i> Update Status';
                 updateBtn.disabled = false;
             }
         }
 
-        // Google Maps integration (disabled - add API key to enable)
-        function initMap() {
-            // Map disabled - add Google Maps API key to enable
-            document.getElementById('map').innerHTML =
-                '<div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #f3f4f6; color: #6b7280;">Map disabled - Add Google Maps API key</div>';
+        // Google Maps initialization callback
+        function initGoogleMaps() {
+            console.log('Google Maps API loaded');
+            initMainMap();
         }
 
         // ...existing code...
 
-        function updateMap(coordinates) {
-            // Clear previous map instance if exists
-            if (window.leafletMap) {
-                window.leafletMap.remove();
-                window.leafletMap = null;
+        // Main map for left column
+        let mainMap = null;
+        let mainMapMarkers = [];
+        
+        function initMainMap() {
+            mainMap = new google.maps.Map(document.getElementById('mainMap'), {
+                center: { lat: 20.5937, lng: 78.9629 },
+                zoom: 6,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
+            
+            updateMainMapMarkers();
+        }
+        
+        function updateMapMarkers(reports) {
+            if (!mainMap) return;
+            
+            // Clear existing markers
+            mainMapMarkers.forEach(marker => marker.setMap(null));
+            mainMapMarkers = [];
+            
+            // Add markers for filtered reports
+            reports.forEach(report => {
+                if (report.coordinates || (report.lat && report.lng)) {
+                    const coords = report.coordinates || { lat: report.lat, lng: report.lng };
+                    const statusColors = {
+                        pending: '#f59e0b',
+                        progress: '#3b82f6',
+                        resolved: '#10b981'
+                    };
+                    
+                    const marker = new google.maps.Marker({
+                        position: { lat: coords.lat, lng: coords.lng },
+                        map: mainMap,
+                        title: report.title,
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            fillColor: statusColors[report.status] || '#6b7280',
+                            fillOpacity: 0.8,
+                            strokeColor: '#ffffff',
+                            strokeWeight: 2,
+                            scale: 8
+                        }
+                    });
+                    
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: `
+                            <div style="min-width: 180px; text-align: center;">
+                                <h4 style="margin: 0 0 8px 0; color: #1f2937;">📍 Report Location</h4>
+                                <p style="margin: 0 0 12px 0; color: #6b7280; font-size: 14px;">${report.location}</p>
+                                <button onclick="showReportModal(${JSON.stringify(report).replace(/"/g, '&quot;')})" style="width: 100%; padding: 8px 12px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">View Details</button>
+                            </div>
+                        `
+                    });
+                    
+                    marker.addListener('click', () => {
+                        infoWindow.open(mainMap, marker);
+                        highlightReportInList(report.id);
+                    });
+                    
+                    // Store marker reference with report ID for easy access
+                    marker.reportId = report.id;
+                    mainMapMarkers.push(marker);
+                }
+            });
+        }
+        
+        function updateMainMapMarkers() {
+            updateMapMarkers(allReports);
+        }
+        
+        function selectReportFromMap(reportId) {
+            const report = allReports.find(r => r.id === reportId);
+            if (report) {
+                highlightReportInList(reportId);
+                showReportModal(report);
             }
+        }
 
-            // Create a new map
-            window.leafletMap = L.map('map').setView([coordinates.lat, coordinates.lng], 14);
+        function updateMap(coordinates) {
+            // Create a new map for report details
+            window.detailMap = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: coordinates.lat, lng: coordinates.lng },
+                zoom: 14,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-            }).addTo(window.leafletMap);
+            const marker = new google.maps.Marker({
+                position: { lat: coordinates.lat, lng: coordinates.lng },
+                map: window.detailMap,
+                title: 'Report Location'
+            });
 
-            var marker = L.marker([coordinates.lat, coordinates.lng]).addTo(window.leafletMap);
-            marker.bindPopup(
-                `<b>Location</b><br>Lat: ${coordinates.lat.toFixed(6)}<br>Lng: ${coordinates.lng.toFixed(6)}`
-            ).openPopup();
+            const infoWindow = new google.maps.InfoWindow({
+                content: `<b>Location</b><br>Lat: ${coordinates.lat.toFixed(6)}<br>Lng: ${coordinates.lng.toFixed(6)}`
+            });
+
+            marker.addListener('click', () => {
+                infoWindow.open(window.detailMap, marker);
+            });
         }
 
         // ...existing code...
@@ -1086,10 +1620,245 @@
         }
 
         // Initialize map fallback
-        window.initMap = initMap;
+        window.initGoogleMaps = initGoogleMaps;
+        
 
-        // Initialize map immediately if Google Maps not available
-        setTimeout(initMap, 100);
+        
+        // Initialize maps on dashboard load - Google Maps will auto-initialize via callback
+        
+        // Enhanced real-time sync function
+        function testSync() {
+            const testBtn = event.target;
+            testBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
+            testBtn.disabled = true;
+            
+            try {
+                if (window.realtimeSync && window.realtimeSync.db) {
+                    // Test Firebase sync
+                    window.realtimeSync.db.collection('reports').get().then((snapshot) => {
+                        const reports = [];
+                        snapshot.forEach((doc) => {
+                            reports.push({ id: doc.id, ...doc.data() });
+                        });
+                        
+                        if (reports.length > 0) {
+                            allReports = reports;
+                            applyFilters();
+                            updateStats();
+
+                            showNotification(`🔄 Synced ${reports.length} reports from Firebase`);
+                        } else {
+                            showNotification('📱 No reports found - Submit from mobile app first');
+                        }
+                    }).catch((error) => {
+                        console.error('Firebase sync error:', error);
+                        showNotification('❌ Firebase sync failed - Check configuration');
+                    }).finally(() => {
+                        testBtn.innerHTML = '<i class="fas fa-mobile-alt"></i> Test Sync';
+                        testBtn.disabled = false;
+                    });
+                } else {
+                    // Test localStorage sync
+                    loadReportsFromStorage();
+                    const reportCount = allReports.length;
+                    showNotification(`🔄 Local sync complete - ${reportCount} reports loaded`);
+                    
+                    // Simulate real-time update
+                    setTimeout(() => {
+                        const demoReport = {
+                            id: 'demo_' + Date.now(),
+                            title: 'Real-time Sync Test',
+                            description: 'This is a test report to demonstrate real-time synchronization.',
+                            category: 'infrastructure',
+                            priority: 'medium',
+                            status: 'pending',
+                            location: 'Test Location, City',
+                            coordinates: { lat: 20.5937, lng: 78.9629 },
+                            user: { name: 'Test User', email: 'test@example.com' },
+                            timestamp: new Date().toISOString()
+                        };
+                        
+                        const reports = JSON.parse(localStorage.getItem('civicReports') || '[]');
+                        reports.push(demoReport);
+                        localStorage.setItem('civicReports', JSON.stringify(reports));
+                        
+                        // Trigger update
+                        window.dispatchEvent(new StorageEvent('storage', {
+                            key: 'civicReports',
+                            newValue: JSON.stringify(reports)
+                        }));
+                        
+                        showNotification('📱 Demo report added - Real-time sync working!');
+                    }, 1000);
+                    
+                    testBtn.innerHTML = '<i class="fas fa-mobile-alt"></i> Test Sync';
+                    testBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Sync test error:', error);
+                showNotification('❌ Sync test failed');
+                testBtn.innerHTML = '<i class="fas fa-mobile-alt"></i> Test Sync';
+                testBtn.disabled = false;
+            }
+        }
+        
+        // Group reports by city/location
+        function groupReportsByLocation() {
+            const locationCounts = {};
+            
+            allReports.forEach(report => {
+                const city = report.location.split(',')[0].trim();
+                locationCounts[city] = (locationCounts[city] || 0) + 1;
+            });
+            
+            return locationCounts;
+        }
+        
+        // Filter reports by city when marker is clicked
+        function filterReportsByCity(city) {
+            document.getElementById('searchInput').value = city;
+            applyFilters();
+            showNotification(`Filtered reports for ${city}`);
+        }
+
+        // Highlight report in list and scroll to it
+        function highlightReportInList(reportId) {
+            // Remove previous highlights
+            document.querySelectorAll('.report-item').forEach(item => {
+                item.classList.remove('highlighted');
+            });
+            
+            // Find and highlight the report
+            const reportElement = document.querySelector(`[onclick="selectReport('${reportId}')"]`);
+            if (reportElement) {
+                reportElement.classList.add('highlighted');
+                reportElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Remove highlight after animation
+                setTimeout(() => {
+                    reportElement.classList.remove('highlighted');
+                }, 2000);
+            }
+        }
+
+        // Show detailed report modal
+        function showReportModal(report) {
+            document.getElementById('modalReportTitle').textContent = report.title;
+            document.getElementById('modalReportDescription').textContent = report.description || report.summary || '';
+            document.getElementById('modalReportCategory').innerHTML = `<span class="report-category category-${report.category}">${report.category}</span>`;
+            document.getElementById('modalReportStatus').innerHTML = `<span class="status-badge status-${report.status}">${report.status}</span>`;
+            
+            // Add location with Google Maps link
+            const coords = report.coordinates || { lat: 20.5937, lng: 78.9629 };
+            const googleMapsUrl = `https://www.google.com/maps?q=${coords.lat},${coords.lng}`;
+            document.getElementById('modalReportLocation').innerHTML = `
+                ${report.location}<br>
+                <a href="${googleMapsUrl}" target="_blank" style="color: #3b82f6; text-decoration: none; font-size: 14px; margin-top: 5px; display: inline-block;">
+                    <i class="fas fa-external-link-alt"></i> View in Google Maps
+                </a>
+            `;
+            
+            document.getElementById('modalReportDate').textContent = new Date(report.timestamp || report.createdAt).toLocaleString();
+            
+            // Handle photos if available
+            if (report.photos && report.photos.length > 0) {
+                const photosContainer = document.getElementById('modalPhotos');
+                photosContainer.innerHTML = report.photos.map(photo => 
+                    `<img src="${photo}" alt="Report photo" class="modal-photo" onclick="window.open('${photo}', '_blank')"`
+                ).join('');
+                document.getElementById('modalPhotosSection').style.display = 'block';
+            } else {
+                document.getElementById('modalPhotosSection').style.display = 'none';
+            }
+            
+            document.getElementById('reportModal').style.display = 'flex';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('reportModal').style.display = 'none';
+        }
+
+        // Close modal on outside click
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'reportModal') {
+                closeModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Select report and pan map to its marker
+        function selectReportAndPanMap(reportId) {
+            // Find the marker for this report
+            const marker = mainMapMarkers.find(m => m.reportId === reportId);
+            if (marker && mainMap) {
+                // Pan to marker and zoom in
+                mainMap.panTo(marker.getPosition());
+                mainMap.setZoom(15);
+                
+                // Trigger marker click to open info window
+                google.maps.event.trigger(marker, 'click');
+                
+                // Update selected state in report list
+                document.querySelectorAll('.report-item').forEach(item => item.classList.remove('selected'));
+                const reportElement = event.target.closest('.report-item');
+                if (reportElement) {
+                    reportElement.classList.add('selected');
+                }
+            }
+        }
+
+        // Show loading spinner
+        function showLoadingSpinner() {
+            const container = document.getElementById('reportsContainer');
+            container.innerHTML = `
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <span>Loading reports...</span>
+                </div>
+            `;
+            
+            // Show map loading
+            const mapSection = document.querySelector('.map-section');
+            if (mapSection && !mapSection.querySelector('.loading-spinner')) {
+                const mapSpinner = document.createElement('div');
+                mapSpinner.className = 'loading-spinner';
+                mapSpinner.style.position = 'absolute';
+                mapSpinner.style.top = '0';
+                mapSpinner.style.left = '0';
+                mapSpinner.style.right = '0';
+                mapSpinner.style.bottom = '0';
+                mapSpinner.style.background = 'rgba(255, 255, 255, 0.9)';
+                mapSpinner.style.zIndex = '1000';
+                mapSpinner.innerHTML = '<div class="spinner"></div><span>Loading map...</span>';
+                mapSection.appendChild(mapSpinner);
+            }
+        }
+
+        // Hide loading spinner
+        function hideLoadingSpinner() {
+            const mapSpinner = document.querySelector('.map-section .loading-spinner');
+            if (mapSpinner) {
+                mapSpinner.remove();
+            }
+        }
+
+        // Show error message
+        function showErrorMessage(message) {
+            const container = document.getElementById('reportsContainer');
+            container.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    ${message}
+                </div>
+            `;
+        }
     </script>
 </body>
 
